@@ -53,6 +53,9 @@
     <Compile Include="WNSWofA\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="WNSWofA\Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
     <Compile Include="WNSWofA\PageAnime.cs" />
     <Compile Include="WNSWofA\Program.cs" />
     <Compile Include="WNSWofA\user.cs" />

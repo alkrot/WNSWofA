@@ -57,21 +57,22 @@ namespace WNSWofA
 			        foreach (var pageAnime in _pagesAnime)
 			        {
                         if(pageAnime != null)
-                            _listAnime.Items.Add(pageAnime);
+                            listAnime.Items.Add(pageAnime);
 			        }
 			        stream.Close();
 			    }
 
 			    _thr = new Thread(RefreshSeries);
 				_thr.Start();
-				_timer1.Enabled = true;
+				timer1.Enabled = true;
 				bool tray = User.Default.Tray;
 				if (tray)
 				{
 					ShowInTaskbar = false;
-					_notifyIcon1.Visible = true;
+					notifyIcon1.Visible = true;
 					Hide();
 				}
+                ShowStatus("Вы вошли под: " + ApiVk.First_name + " " + ApiVk.Last_name);
 			}
 			catch (FileNotFoundException)
 			{
@@ -91,20 +92,20 @@ namespace WNSWofA
 			User.Default.Tray = tray != "-1" && bool.Parse(tray);
 			User.Default.OutVk = outVk != "-1" && bool.Parse(outVk);
 			User.Default.SoundPush = soundPush == "-1" ? User.Default.SoundPush : soundPush;
-			_cbSound.Text = User.Default.SoundPush;
-			_lSettingsStatus.Text = @"Статус";
-			_checkMute.Checked = User.Default.Mute;
-			_checkTray.Checked = User.Default.Tray;
-			_outVkcheck.Checked = User.Default.OutVk;
+			cbSound.Text = User.Default.SoundPush;
+			lSettingsStatus.Text = @"Статус";
+			checkMute.Checked = User.Default.Mute;
+			checkTray.Checked = User.Default.Tray;
+			outVkcheck.Checked = User.Default.OutVk;
 		}
 
-		public bool Parse(string url)
-	{
+		private bool Parse(string url)
+        {
 			char[] separator = {'-','_'};
 			string[] array = url.Split(separator);
 			int num = int.Parse("-" + array[1]);
 			int num2 = int.Parse(array[2]);
-		    if (_pagesAnime.Select(t => t.GroupId == num & t.PageId == num2).Any(flag => flag))
+		    if (_pagesAnime.Select(t => t.Group_id == num & t.Page_id == num2).Any(flag => flag))
 		        return false;
 		    string text;
 			JObject jObject;
@@ -117,10 +118,10 @@ namespace WNSWofA
 			string text2 = jObject["response"]["title"].ToString();
 			Match match = Regex.Match(input, "<img class=\"wk_photo_no_padding\" wiki=\"-[0-9]+_[0-9]+\" alt=\"\" title=\"\" src=\"(https://[\\S|\\-|A-z|\\.|/|0-9|_]+)\" style=\"width:280px; height:360px;\"");
 			string urlImage = match.Groups[1].ToString();
-			_listAnime.Items.Add(text2);
-			_listAnime.SelectedIndex = _listAnime.Items.Count - 1;
+			listAnime.Items.Add(text2);
+			listAnime.SelectedIndex = listAnime.Items.Count - 1;
 			PageAnime pageAnime = new PageAnime(text2, ongoing, urlImage, count, countSeries, description, num, num2);
-			pageAnime.Show(_descriptionText, _posterBox);
+			pageAnime.Show(descriptionText, posterBox);
 			_pagesAnime.Add(pageAnime);
 			return true;
 		}
@@ -155,7 +156,7 @@ namespace WNSWofA
 			}
 		}
 
-	    private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+	    private void Form1_Closing(object sender, FormClosingEventArgs e)
 		{
 			ClosingApp();
 		}
@@ -207,7 +208,7 @@ namespace WNSWofA
 				string text3;
 				int num;
 				int num2;
-				SeriesCountParse(current.GroupId, current.PageId, out text, out jObject, out text2, out ongoing, out text3, out num, out num2);
+				SeriesCountParse(current.Group_id, current.Page_id, out text, out jObject, out text2, out ongoing, out text3, out num, out num2);
 				current.Ongoing = ongoing;
 				bool flag = num2 > current.Count;
 				if (flag)
@@ -239,12 +240,12 @@ namespace WNSWofA
 		{
 			int result = _pagesAnime.IndexOf(pa);
 			_ballonIndex = result;
-			bool flag = !_notifyIcon1.Visible;
+			bool flag = !notifyIcon1.Visible;
 			if (flag)
 			{
-				_notifyIcon1.Visible = true;
+				notifyIcon1.Visible = true;
 			}
-			_notifyIcon1.ShowBalloonTip(100000, text, pa.Title, ToolTipIcon.Info);
+			notifyIcon1.ShowBalloonTip(100000, text, pa.Title, ToolTipIcon.Info);
 			return result;
 		}
 
@@ -255,44 +256,44 @@ namespace WNSWofA
 		        BeginInvoke(new RenameAnime(RenameListAnime), pa, index);
 		    else
 		    {
-		        _listAnime.Items.RemoveAt(index);
-		        _listAnime.Items.Insert(index, pa);
+		        listAnime.Items.RemoveAt(index);
+		        listAnime.Items.Insert(index, pa);
 		    }
 		}
 
 		private void удалитьИзСпискаToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-		    bool flag = _listAnime.Items.Count > 0;
+		    bool flag = listAnime.Items.Count > 0;
 		    if (flag)
 		    {
 		        ThreadAbort();
-		        int num = _listAnime.SelectedIndex;
-		        _listAnime.Items.RemoveAt(num);
+		        int num = listAnime.SelectedIndex;
+		        listAnime.Items.RemoveAt(num);
 		        _pagesAnime.RemoveAt(num);
-		        bool flag2 = _listAnime.Items.Count > 0;
+		        bool flag2 = listAnime.Items.Count > 0;
 		        if (flag2)
 		        {
 		            num = num > 1 ? num - 1 : 0;
-		            _listAnime.SelectedIndex = num;
-		            _pagesAnime[num].Show(_descriptionText, _posterBox);
+		            listAnime.SelectedIndex = num;
+		            _pagesAnime[num].Show(descriptionText, posterBox);
 		            SaveListAnime();
-		            _timer1.Enabled = true;
+		            timer1.Enabled = true;
 		        }
 		    }
         }
 
 		private void WalkingList()
 		{
-			bool visible = _notifyIcon1.Visible;
+			bool visible = notifyIcon1.Visible;
 			if (visible)
 			{
-				_notifyIcon1.Visible = false;
+				notifyIcon1.Visible = false;
 			}
-			int selectedIndex = _listAnime.SelectedIndex;
+			int selectedIndex = listAnime.SelectedIndex;
 			bool flag = selectedIndex >= 0;
 			if (flag)
 			{
-				_pagesAnime[selectedIndex].Show(_descriptionText, _posterBox);
+				_pagesAnime[selectedIndex].Show(descriptionText, posterBox);
 				DelRefresh(selectedIndex);
 			}
 		}
@@ -304,11 +305,11 @@ namespace WNSWofA
 			{
 				ThreadAbort();
 				_pagesAnime[index].Refresh = false;
-				_listAnime.Items.RemoveAt(index);
-				_listAnime.Items.Insert(index, _pagesAnime[index].Title);
-				_listAnime.SelectedIndex = index;
+				listAnime.Items.RemoveAt(index);
+				listAnime.Items.Insert(index, _pagesAnime[index].Title);
+				listAnime.SelectedIndex = index;
 				SaveListAnime();
-				_timer1.Enabled = true;
+				timer1.Enabled = true;
 			}
 		}
 
@@ -316,7 +317,7 @@ namespace WNSWofA
 		{
 			try
 			{
-				_timer1.Enabled = false;
+				timer1.Enabled = false;
 				bool flag = _thr.ThreadState == ThreadState.Running || _thr.ThreadState == ThreadState.WaitSleepJoin;
 			    if (flag)
 			        _thr.Abort();
@@ -332,11 +333,11 @@ namespace WNSWofA
 
 		private void открытьВБраузереToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-		    bool flag = _listAnime.Items.Count > 0;
+		    bool flag = listAnime.Items.Count > 0;
 		    if (flag)
 		    {
-		        int selectedIndex = _listAnime.SelectedIndex;
-		        Process.Start(_pagesAnime[selectedIndex].PageUrl);
+		        int selectedIndex = listAnime.SelectedIndex;
+		        Process.Start(_pagesAnime[selectedIndex].Page_url);
 		    }
         }
 
@@ -347,7 +348,7 @@ namespace WNSWofA
 
 		private void ShowForm()
 		{
-			_notifyIcon1.Visible = false;
+			notifyIcon1.Visible = false;
 			ShowInTaskbar = true;
 			WindowState = FormWindowState.Normal;
 		}
@@ -358,7 +359,7 @@ namespace WNSWofA
 			if (flag)
 			{
 				ShowInTaskbar = false;
-				_notifyIcon1.Visible = true;
+				notifyIcon1.Visible = true;
 			}
 		}
 
@@ -368,9 +369,12 @@ namespace WNSWofA
 
 		private void notifyIcon1_BalloonTipClicked(object sender, EventArgs e)
 		{
-			Process.Start(_pagesAnime[_ballonIndex].PageUrl);
-			DelRefresh(_ballonIndex);
-			_pagesAnime[_ballonIndex].Show(_descriptionText, _posterBox);
+            if (_pagesAnime.Count > 0 && _ballonIndex >= 0)
+            {
+                Process.Start(_pagesAnime[_ballonIndex].Page_url);
+                DelRefresh(_ballonIndex);
+                _pagesAnime[_ballonIndex].Show(descriptionText, posterBox);
+            }
 		}
 
 		private void закрытьToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -385,22 +389,18 @@ namespace WNSWofA
 
 		private void listAnime_KeyUp(object sender, KeyEventArgs e)
 		{
-			bool flag = e.KeyCode == Keys.Up || e.KeyCode == Keys.Down || e.KeyCode == Keys.Right || e.KeyCode == Keys.Left;
-			if (flag)
-			{
-				WalkingList();
-			}
-		}
+            WalkingList();
+        }
 
-		private void button1_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				bool flag = _pageUrl.Text.Length > 0;
+				bool flag = pageUrl.Text.Length > 0;
 			    if (flag)
 			    {
-			        AddAnime(_pageUrl.Text);
-			        _pageUrl.Text = "";
+			        AddAnime(pageUrl.Text);
+			        pageUrl.Text = "";
 			    }
 			    else
 			        MessageBox.Show(@"Вставьте ссылку");
@@ -423,19 +423,19 @@ namespace WNSWofA
 			{
 				MessageBox.Show(@"Это аниме уже есть в списке!", @"Внимание");
 			}
-			_timer1.Enabled = true;
+			timer1.Enabled = true;
 		}
 
 		private void checkTray_CheckedChanged(object sender, EventArgs e)
 		{
-			User.Default.Tray = _checkTray.Checked;
-			_lSettingsStatus.Text = @"Приложение будет запускаться " + (_checkTray.Checked ? "свернутым" : "в нормальном окне");
+			User.Default.Tray = checkTray.Checked;
+			lSettingsStatus.Text = @"Приложение будет запускаться " + (checkTray.Checked ? "свернутым" : "в нормальном окне");
 		}
 
 		private void настройкиToolStripMenuItem1_Click(object sender, EventArgs e)
 		{
 			ShowForm();
-			_tabControl1.SelectedIndex = 1;
+			tabControl1.SelectedIndex = 1;
 		}
 
 		private void OutVk()
@@ -458,8 +458,8 @@ namespace WNSWofA
 
 		private void outVkcheck_CheckedChanged(object sender, EventArgs e)
 		{
-			User.Default.OutVk = _outVkcheck.Checked;
-			_lSettingsStatus.Text = @"Приложение " + (_outVkcheck.Checked ? "" : "не ") + @"будет выходить с вашего аккаунта";
+			User.Default.OutVk = outVkcheck.Checked;
+			lSettingsStatus.Text = @"Приложение " + (outVkcheck.Checked ? "" : "не ") + @"будет выходить с вашего аккаунта";
 		}
 
 		private void сменитьАккаунтToolStripMenuItem_Click(object sender, EventArgs e)
@@ -472,17 +472,22 @@ namespace WNSWofA
 
 		private void PlaySound(string filename)
 		{
-			string text = UserConfigPath + "ringtons\\" + filename;
-			bool flag = !File.Exists(text);
+            string text = UserConfigPath + "ringtons\\" + filename;
+            bool flag = !File.Exists(text);
 			if (!flag)
-			{
-			    SoundPlayer soundPlayer = new SoundPlayer {SoundLocation = text};
-			    soundPlayer.Load();
-				soundPlayer.Play();
-			}
-		}
+            {
+                player(text);
+            }
+        }
 
-		private void LoadSound()
+        private static void player(string source)
+        {
+            SoundPlayer soundPlayer = new SoundPlayer { SoundLocation = source };
+            soundPlayer.Load();
+            soundPlayer.Play();
+        }
+
+        private void LoadSound()
 		{
 			string text = UserConfigPath + "ringtons\\";
 			bool flag = File.Exists(text + User.Default.SoundPush);
@@ -493,9 +498,9 @@ namespace WNSWofA
 		        foreach (string path in array)
 		        {
 		            string fileName = Path.GetFileName(path);
-		            bool flag2 = fileName != null && _cbSound.Items.IndexOf(fileName) < 0;
+		            bool flag2 = fileName != null && cbSound.Items.IndexOf(fileName) < 0;
 		            if (flag2)
-		                _cbSound.Items.Add(fileName);
+		                cbSound.Items.Add(fileName);
 		        }
 		    }
 		    else
@@ -519,13 +524,14 @@ namespace WNSWofA
 
 		private void ShowStatus(string text)
 		{
-			bool flag = !_notifyIcon1.Visible;
+			bool flag = !notifyIcon1.Visible;
 			if (flag)
 			{
-				_notifyIcon1.Visible = true;
+				notifyIcon1.Visible = true;
 			}
-			_notifyIcon1.BalloonTipText = text;
-			_notifyIcon1.ShowBalloonTip(1000);
+			notifyIcon1.BalloonTipText = text;
+			notifyIcon1.ShowBalloonTip(1000);
+            _ballonIndex = -1;
 		}
 		private void Complete(object sender, EventArgs e)
 		{
@@ -534,17 +540,17 @@ namespace WNSWofA
 
 		private void comboBox1_SelectedIndexChanged_1(object sender, EventArgs e)
 		{
-			User.Default.SoundPush = _cbSound.Text;
-			_lSettingsStatus.Text = @"Уведомление устанновленно";
+			User.Default.SoundPush = cbSound.Text;
+			lSettingsStatus.Text = @"Уведомление устанновленно";
 		}
 
 		private void копироватьСсылкуToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			bool flag = _listAnime.Items.Count > 0;
+			bool flag = listAnime.Items.Count > 0;
 			if (flag)
 			{
-				int selectedIndex = _listAnime.SelectedIndex;
-				Clipboard.SetText(_pagesAnime[selectedIndex].PageUrl);
+				int selectedIndex = listAnime.SelectedIndex;
+				Clipboard.SetText(_pagesAnime[selectedIndex].Page_url);
 				MessageBox.Show(@"Скопированно");
 			}
 		}
@@ -556,13 +562,13 @@ namespace WNSWofA
 				bool flag = e.KeyChar == '\r';
 				if (flag)
 				{
-					int count = _listAnime.Items.Count;
-					AddAnime(_toolpageAnime.Text);
-					bool flag2 = _listAnime.Items.Count > count;
+					int count = listAnime.Items.Count;
+					AddAnime(toolpageAnime.Text);
+					bool flag2 = listAnime.Items.Count > count;
 					if (flag2)
 					{
 						MessageBox.Show(@"Добавленна", @"Страница");
-						_toolpageAnime.Text = "";
+						toolpageAnime.Text = "";
 					}
 				}
 			}
@@ -574,20 +580,20 @@ namespace WNSWofA
 
 		private void checkMute_CheckedChanged(object sender, EventArgs e)
 		{
-			User.Default.Mute = _checkMute.Checked;
-			_lSettingsStatus.Text = @"Звук" + (_checkMute.Checked ? " выключен" : " включен");
+			User.Default.Mute = checkMute.Checked;
+			lSettingsStatus.Text = @"Звук" + (checkMute.Checked ? " выключен" : " включен");
 		}
 
 		private void btnSaveSettings_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				User.Default.SoundPush = _cbSound.Text;
-				User.Default.Mute = _checkMute.Checked;
-				User.Default.Tray = _checkTray.Checked;
-				User.Default.OutVk = _outVkcheck.Checked;
+				User.Default.SoundPush = cbSound.Text;
+				User.Default.Mute = checkMute.Checked;
+				User.Default.Tray = checkTray.Checked;
+				User.Default.OutVk = outVkcheck.Checked;
 				SaveSettings();
-				_lSettingsStatus.Text = @"Все настройки сохранены";
+				lSettingsStatus.Text = @"Все настройки сохранены";
 			}
 			catch (Exception ex)
 			{
@@ -595,9 +601,9 @@ namespace WNSWofA
 			}
 		}
 
-		private void button1_Click_1(object sender, EventArgs e)
+		private void btnPlay_Click(object sender, EventArgs e)
 		{
-			PlaySound(_cbSound.Text);
+			PlaySound(cbSound.Text);
 		}
 
 		private string Get(string url)
@@ -621,17 +627,79 @@ namespace WNSWofA
 			Regex regex = new Regex("<a href=\\\"(\\w+\\.wav)\\\">");
 			foreach (Match match in regex.Matches(input))
 			{
-				_listRingtons.Items.Add(match.Groups[1]);
+				listRingtons.Items.Add(match.Groups[1]);
 			}
 		}
 
 		private void btnDownload_Click(object sender, EventArgs e)
 		{
-			foreach (object current in _listRingtons.SelectedItems)
+			foreach (object current in listRingtons.SelectedItems)
 			{
 				DownloadSound(current.ToString());
 			}
 			LoadSound();
 		}
+
+        private void btnPlayUrl_Click(object sender, EventArgs e)
+        {
+            if(listRingtons.SelectedIndex > -1) {
+                string url = "http://aldiamond.16mb.com/WNSWofA/ringtons/" + listRingtons.SelectedItem;
+                player(url);
+            }
+        }
+
+        private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                StreamWriter write = new StreamWriter(saveFileDialog1.FileName);
+                foreach (PageAnime page in _pagesAnime)
+                    write.WriteLine(page.Page_url);
+                write.Flush();
+                write.Close();
+            }
+        }
+
+        private void загрузитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                loadListAnime(openFileDialog1.FileName);
+            }
+        }
+
+        private void loadListAnime(string path)
+        {
+            StreamReader read = new StreamReader(path);
+            string[] list = read.ReadToEnd().Trim().Split('\r');
+            foreach (string url in list)
+                AddAnime(url);
+            read.Close();
+            ShowStatus("Список загружен");
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TabControl tab = (TabControl)sender;
+            if (tab.SelectedIndex == 1)
+                lSettingsStatus.Text = "Настройки для: " + ApiVk.First_name + " " + ApiVk.Last_name;
+        }
+
+        private void listAnime_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
+                ((e.AllowedEffect & DragDropEffects.Move) == DragDropEffects.Move))
+                e.Effect = DragDropEffects.Move;
+        }
+
+        private void listAnime_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && e.Effect == DragDropEffects.Move)
+            {
+                string[] objects = (string[]) e.Data.GetData(DataFormats.FileDrop);
+                for (int i = 0; i < objects.Length; i++)
+                    loadListAnime(objects[i]);
+            }
+        }
     }
 }

@@ -6,157 +6,172 @@ namespace WNSWofA
 	[Serializable]
 	public class PageAnime
 	{
-		private string _title;
+        private string title;
 
-		private bool _ongoing = true;
+        private bool ongoing = true;
 
-		private string _urlImage;
+        private string url_image;
 
-		private int _count;
+        private int count;
 
-		private int _countSeries;
+        private int count_series;
 
-		private string _description;
+        private string description;
 
-		private int _groupId;
+        private int group_id;
 
-		private int _pageId;
+        private int page_id;
 
-	    private bool _refresh;
+        private string page_url;
 
-		public string Title
-		{
-			get
-			{
-				return _title;
-			}
-			set
-			{
-				_title = value;
-			}
-		}
+        private bool refresh = false;
 
-		public bool Ongoing
-		{
-			get
-			{
-				return _ongoing;
-			}
-			set
-			{
-				_ongoing = value;
-			}
-		}
+        public string Title
+        {
+            get
+            {
+                return title;
+            }
+            set
+            {
+                title = value;
+            }
+        }
 
-		public string UrlImage
-		{
-			get
-			{
-				return _urlImage;
-			}
-			set
-			{
-				_urlImage = value;
-			}
-		}
+        public bool Ongoing
+        {
+            get
+            {
+                return ongoing;
+            }
+            set
+            {
+                ongoing = value;
+            }
+        }
 
-		public int Count
-		{
-			get
-			{
-				return _count;
-			}
-			set
-			{
-				_count = value;
-			}
-		}
+        public string Url_image
+        {
+            get
+            {
+                return url_image;
+            }
+            set
+            {
+                url_image = value;
+            }
+        }
 
-		public int CountSeries
-		{
-			get
-			{
-				return _countSeries;
-			}
-			set
-			{
-				_countSeries = value;
-			}
-		}
+        public int Count
+        {
+            get
+            {
+                return count;
+            }
+            set
+            {
+                count = value;
+            }
+        }
 
-		public string Description
-		{
-			get
-			{
-				return _description;
-			}
-			set
-			{
-				_description = value;
-			}
-		}
+        public int Count_series
+        {
+            get
+            {
+                return count_series;
+            }
+            set
+            {
+                count_series = value;
+            }
+        }
 
-		public int GroupId
-		{
-			get
-			{
-				return _groupId;
-			}
-			set
-			{
-				_groupId = value;
-			}
-		}
+        public string Description
+        {
+            get
+            {
+                return description;
+            }
+            set
+            {
+                description = value;
+            }
+        }
 
-		public int PageId
-		{
-			get
-			{
-				return _pageId;
-			}
-			set
-			{
-				_pageId = value;
-			}
-		}
+        public int Group_id
+        {
+            get
+            {
+                return group_id;
+            }
+            set
+            {
+                group_id = value;
+            }
+        }
 
-		public bool Refresh
-		{
-			get
-			{
-				return _refresh;
-			}
-			set
-			{
-				_refresh = value;
-			}
-		}
+        public int Page_id
+        {
+            get
+            {
+                return page_id;
+            }
+            set
+            {
+                page_id = value;
+            }
+        }
 
-	    public string PageUrl { get; }
+        public bool Refresh
+        {
+            get
+            {
+                return refresh;
+            }
+            set
+            {
+                refresh = value;
+            }
+        }
 
-	    public PageAnime(string title, bool ongoing, string urlImage, int count, int countSeries, string description, int groupId, int pageId)
-		{
-			Title = title;
-			Ongoing = ongoing;
-			UrlImage = urlImage;
-			Count = count;
-			CountSeries = countSeries;
-			Description = description;
-			GroupId = groupId;
-			PageId = pageId;
-			PageUrl = string.Concat("https://vk.com/page", GroupId, "_", PageId);
-		}
+        public string Page_url
+        {
+            get
+            {
+                return page_url;
+            }
+        }
 
-		public void Show(RichTextBox rtb, PictureBox pb)
-		{
-			string value = string.Concat("Добавленно серий: ", Count, "\r\n________________________\r\n", Ongoing ? "Онгоинг" : "Закончен", "\r\n________________________\r\n");
-			rtb.Text = Description.Insert(0, value);
-			pb.ImageLocation = UrlImage;
-		}
+        public PageAnime(string title, bool ongoing, string url_image, int count, int count_series, string description, int group_id, int page_id)
+        {
+            Title = title;
+            Ongoing = ongoing;
+            Url_image = url_image;
+            Count = count;
+            Count_series = count_series;
+            Description = description;
+            Group_id = group_id;
+            Page_id = page_id;
+            page_url = string.Concat(new object[] { "https://vk.com/page", Group_id, "_", Page_id });
+        }
 
-		public override string ToString()
-		{
-			return Refresh ? ("*" + Title) : Title;
-		}
-	}
+        public void Show(RichTextBox rtb, PictureBox pb)
+        {
+            string value = string.Concat(new object[]
+            {
+                "Добавленно серий: ",
+                Count,
+                "\r\n________________________\r\n",
+                Ongoing ? "Онгоинг" : "Закончен",
+                "\r\n________________________\r\n"
+            });
+            rtb.Text = Description.Insert(0, value);
+            pb.ImageLocation = Url_image;
+        }
+
+        public override string ToString()
+        {
+            return Refresh ? ("*" + Title) : Title;
+        }
+    }
 }

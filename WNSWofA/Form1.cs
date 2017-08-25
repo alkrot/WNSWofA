@@ -130,7 +130,7 @@ namespace WNSWofA
 		{
 			param = string.Concat("owner_id=", groupId, "&page_id=", pageId, "&need_source=1&need_html=1");
 			get = ApiVk.Send("pages.get", param, "5.53");
-			bool flag = get["error"] == null;
+			bool flag = get != null && get["error"] == null;
 			if (flag)
 			{
 				source = get["response"]["html"].ToString();
@@ -154,6 +154,7 @@ namespace WNSWofA
 				ongoing = false;
 				count = countSeries = 0;
 			}
+            Thread.Sleep(500);
 		}
 
 	    private void Form1_Closing(object sender, FormClosingEventArgs e)

@@ -72,7 +72,7 @@ namespace WNSWofA
 					notifyIcon1.Visible = true;
 					Hide();
 				}
-                ShowStatus("Вы вошли под: " + ApiVk.First_name + " " + ApiVk.Last_name);
+                ShowStatus("Вы вошли как: " + ApiVk.First_name + " " + ApiVk.Last_name);
 			}
 			catch (FileNotFoundException)
 			{

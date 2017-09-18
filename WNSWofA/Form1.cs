@@ -422,7 +422,7 @@ namespace WNSWofA
 			}
 			else
 			{
-				MessageBox.Show(@"Это аниме уже есть в списке!", @"Внимание");
+				ShowStatus("Это аниме уже есть в списке!");
 			}
 			timer1.Enabled = true;
 		}

@@ -31,7 +31,7 @@ namespace WNSWofA
 		private INI _ini;
 
 	    public string UserConfigPath { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Personal) +
-	                                            "\\WNSWofA\\";
+	                                            "\\WNSWofA\\"; //Путь к папки с настройками программы
 
 		public Form1()
 		{
@@ -42,13 +42,16 @@ namespace WNSWofA
 		{
 			ApiVk.Start(5608359, "pages,groups");
 			ApiVk.Send("stats.trackVisitor", "");
-			bool flag = !Directory.Exists(UserConfigPath);
-		    if (flag)
+
+            //Если папки нет, то создать
+		    if (!Directory.Exists(UserConfigPath))
 		        Directory.CreateDirectory(UserConfigPath);
+
 		    string path = UserConfigPath + ApiVk.ID + ".dat";
 			LoadSettings();
 			try
 			{
+                //Получением сохраненного списка
 				BinaryFormatter binaryFormatter = new BinaryFormatter();
 			    using (Stream stream = File.OpenRead(path))
 			    {
@@ -62,6 +65,7 @@ namespace WNSWofA
 			        stream.Close();
 			    }
 
+                //Запуск отдельного потока для проверки добавление серий
 			    _thr = new Thread(RefreshSeries);
 				_thr.Start();
 				timer1.Enabled = true;
@@ -80,6 +84,9 @@ namespace WNSWofA
 			}
 		}
 
+        /// <summary>
+        /// Загрузка настроек
+        /// </summary>
 		private void LoadSettings()
 		{
 			LoadSound();
@@ -99,13 +106,19 @@ namespace WNSWofA
 			outVkcheck.Checked = User.Default.OutVk;
 		}
 
+        /// <summary>
+        /// Парсинг вики страницы
+        /// </summary>
+        /// <param name="url">Ссылка настраницу</param>
+        /// <returns></returns>
 		private bool Parse(string url)
         {
 			char[] separator = {'-','_'};
 			string[] array = url.Split(separator);
 			int num = int.Parse("-" + array[1]);
 			int num2 = int.Parse(array[2]);
-		    if (_pagesAnime.Select(t => t.Group_id == num & t.Page_id == num2).Any(flag => flag))
+            //Если така страница есть, то не добавлять
+		    if (_pagesAnime.Select(t => t.Group_id == num && t.Page_id == num2).Any())
 		        return false;
 		    string text;
 			JObject jObject;
@@ -118,6 +131,7 @@ namespace WNSWofA
 			string text2 = jObject["response"]["title"].ToString();
 			Match match = Regex.Match(input, "<img class=\"wk_photo_no_padding\" wiki=\"-[0-9]+_[0-9]+\" alt=\"\" title=\"\" src=\"(https://[\\S|\\-|A-z|\\.|/|0-9|_]+)\" style=\"width:280px; height:360px;\"");
 			string urlImage = match.Groups[1].ToString();
+            //Добавляем и показываем
 			listAnime.Items.Add(text2);
 			listAnime.SelectedIndex = listAnime.Items.Count - 1;
 			PageAnime pageAnime = new PageAnime(text2, ongoing, urlImage, count, countSeries, description, num, num2);
@@ -126,16 +140,27 @@ namespace WNSWofA
 			return true;
 		}
 
+        /// <summary>
+        /// Получение информации о вики-страницы
+        /// </summary>
+        /// <param name="groupId">id Группы</param>
+        /// <param name="pageId">id Страницы</param>
+        /// <param name="param">Парамметры</param>
+        /// <param name="get">Запрос</param>
+        /// <param name="source">Источник</param>
+        /// <param name="ongoing">Онгинг ли</param>
+        /// <param name="description">Описание</param>
+        /// <param name="countSeries">Количество добавленныхсерий</param>
+        /// <param name="count">Серий всего</param>
 		private void SeriesCountParse(int groupId, int pageId, out string param, out JObject get, out string source, out bool ongoing, out string description, out int countSeries, out int count)
 		{
 			param = string.Concat("owner_id=", groupId, "&page_id=", pageId, "&need_source=1&need_html=1");
 			get = ApiVk.Send("pages.get", param, "5.53");
-			bool flag = get != null && get["error"] == null;
-			if (flag)
+            //Если запрос получен и нет ошибок, то получаем новую информцию
+			if (get != null && get["error"] == null)
 			{
 				source = get["response"]["html"].ToString();
-				bool flag2 = source.Length == 0;
-			    if (flag2)
+			    if (source.Length == 0)
 			        throw new NullReferenceException("Неизвестная проблема");
 			    ongoing = source.IndexOf("131px;", StringComparison.Ordinal) > 0;
 				int startIndex = source.IndexOf("Выпуск", StringComparison.Ordinal);
@@ -147,14 +172,14 @@ namespace WNSWofA
 				matchCollection = Regex.Matches(source, "video-[0-9]*_[0-9]*");
 				count = matchCollection.Count;
 			}
-			else
+			else //иначе null
 			{
 			    get = null;
                 description = source = param = null;
 				ongoing = false;
 				count = countSeries = 0;
 			}
-            Thread.Sleep(500);
+            Thread.Sleep(500); //Задержка потока
 		}
 
 	    private void Form1_Closing(object sender, FormClosingEventArgs e)
@@ -162,6 +187,9 @@ namespace WNSWofA
 			ClosingApp();
 		}
 
+        /// <summary>
+        /// Закрытие и сохранение
+        /// </summary>
 		private void ClosingApp()
 		{
 			ThreadAbort();
@@ -172,6 +200,9 @@ namespace WNSWofA
 		        OutVk();
 		}
 
+        /// <summary>
+        /// Сохранение списка
+        /// </summary>
 		private void SaveListAnime()
 		{
 			BinaryFormatter binaryFormatter = new BinaryFormatter();
@@ -180,6 +211,9 @@ namespace WNSWofA
 		        binaryFormatter.Serialize(stream, _pagesAnime);
 		}
 
+        /// <summary>
+        /// Сохранение настроек
+        /// </summary>
 		private void SaveSettings()
 		{
 			_ini.iniWrite("App", "tray", User.Default.Tray.ToString());
@@ -190,14 +224,16 @@ namespace WNSWofA
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
-			bool flag = _thr != null && (_thr.ThreadState == ThreadState.Stopped || _thr.ThreadState == ThreadState.Aborted);
-			if (flag)
+			if (_thr != null && (_thr.ThreadState == ThreadState.Stopped || _thr.ThreadState == ThreadState.Aborted))
 			{
 				_thr = new Thread(RefreshSeries);
 				_thr.Start();
 			}
 		}
 
+        /// <summary>
+        /// Проверка серий
+        /// </summary>
 		private void RefreshSeries()
 		{
 			foreach (PageAnime current in _pagesAnime)
@@ -211,8 +247,7 @@ namespace WNSWofA
 				int num2;
 				SeriesCountParse(current.Group_id, current.Page_id, out text, out jObject, out text2, out ongoing, out text3, out num, out num2);
 				current.Ongoing = ongoing;
-				bool flag = num2 > current.Count;
-				if (flag)
+				if (num2 > current.Count)
 				{
 					current.Count = num2;
 					bool flag2 = !current.Refresh;
@@ -237,12 +272,17 @@ namespace WNSWofA
 			}
 		}
 
+        /// <summary>
+        /// Оповещение о новой серийй
+        /// </summary>
+        /// <param name="pa">Класс страницы</param>
+        /// <param name="text">Сообщение</param>
+        /// <returns></returns>
 		private int ShowBallon(PageAnime pa, string text = "Новая серия")
 		{
 			int result = _pagesAnime.IndexOf(pa);
 			_ballonIndex = result;
-			bool flag = !notifyIcon1.Visible;
-			if (flag)
+			if (!notifyIcon1.Visible)
 			{
 				notifyIcon1.Visible = true;
 			}
@@ -250,10 +290,14 @@ namespace WNSWofA
 			return result;
 		}
 
+        /// <summary>
+        /// Измениние о том что серия была увиденна
+        /// </summary>
+        /// <param name="pa">Класс страницы</param>
+        /// <param name="index">Индекс</param>
 		private void RenameListAnime(PageAnime pa, int index)
 		{
-			bool invokeRequired = InvokeRequired;
-		    if (invokeRequired)
+		    if (InvokeRequired)
 		        BeginInvoke(new RenameAnime(RenameListAnime), pa, index);
 		    else
 		    {
@@ -264,15 +308,13 @@ namespace WNSWofA
 
 		private void удалитьИзСпискаToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-		    bool flag = listAnime.Items.Count > 0;
-		    if (flag)
+		    if (listAnime.Items.Count > 0)
 		    {
 		        ThreadAbort();
 		        int num = listAnime.SelectedIndex;
 		        listAnime.Items.RemoveAt(num);
 		        _pagesAnime.RemoveAt(num);
-		        bool flag2 = listAnime.Items.Count > 0;
-		        if (flag2)
+		        if (listAnime.Items.Count > 0)
 		        {
 		            num = num > 1 ? num - 1 : 0;
 		            listAnime.SelectedIndex = num;
@@ -283,22 +325,27 @@ namespace WNSWofA
 		    }
         }
 
+        /// <summary>
+        /// Хождение по списку
+        /// </summary>
 		private void WalkingList()
 		{
-			bool visible = notifyIcon1.Visible;
-			if (visible)
+			if (notifyIcon1.Visible)
 			{
 				notifyIcon1.Visible = false;
 			}
 			int selectedIndex = listAnime.SelectedIndex;
-			bool flag = selectedIndex >= 0;
-			if (flag)
+			if (selectedIndex >= 0)
 			{
 				_pagesAnime[selectedIndex].Show(descriptionText, posterBox);
 				DelRefresh(selectedIndex);
 			}
 		}
 
+        /// <summary>
+        /// Удалить и списка
+        /// </summary>
+        /// <param name="index">Индекс</param>
 		private void DelRefresh(int index)
 		{
 			bool refresh = _pagesAnime[index].Refresh;
@@ -314,13 +361,15 @@ namespace WNSWofA
 			}
 		}
 
+        /// <summary>
+        /// Выключить поток
+        /// </summary>
 		private void ThreadAbort()
 		{
 			try
 			{
 				timer1.Enabled = false;
-				bool flag = _thr.ThreadState == ThreadState.Running || _thr.ThreadState == ThreadState.WaitSleepJoin;
-			    if (flag)
+			    if (_thr.ThreadState == ThreadState.Running || _thr.ThreadState == ThreadState.WaitSleepJoin)
 			        _thr.Abort();
 			}
 			catch (NullReferenceException ex)
@@ -334,8 +383,7 @@ namespace WNSWofA
 
 		private void открытьВБраузереToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-		    bool flag = listAnime.Items.Count > 0;
-		    if (flag)
+		    if (listAnime.Items.Count > 0)
 		    {
 		        int selectedIndex = listAnime.SelectedIndex;
 		        Process.Start(_pagesAnime[selectedIndex].Page_url);
@@ -356,8 +404,7 @@ namespace WNSWofA
 
 		private void Form1_Resize(object sender, EventArgs e)
 		{
-			bool flag = WindowState == FormWindowState.Minimized;
-			if (flag)
+			if (WindowState == FormWindowState.Minimized)
 			{
 				ShowInTaskbar = false;
 				notifyIcon1.Visible = true;
@@ -397,8 +444,7 @@ namespace WNSWofA
 		{
 			try
 			{
-				bool flag = pageUrl.Text.Length > 0;
-			    if (flag)
+			    if (pageUrl.Text.Length > 0)
 			    {
 			        AddAnime(pageUrl.Text);
 			        pageUrl.Text = "";
@@ -412,6 +458,10 @@ namespace WNSWofA
 			}
 		}
 
+        /// <summary>
+        /// Добавление аниме
+        /// </summary>
+        /// <param name="url">Ссылка на вики-страницу</param>
 		private void AddAnime(string url)
 		{
 			ThreadAbort();
@@ -439,6 +489,9 @@ namespace WNSWofA
 			tabControl1.SelectedIndex = 1;
 		}
 
+        /// <summary>
+        /// Выход из вк
+        /// </summary>
 		private void OutVk()
 		{
 			string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.Cookies);
@@ -471,36 +524,44 @@ namespace WNSWofA
 			Close();
 		}
 
+        /// <summary>
+        /// Воспроизведение рингтона
+        /// </summary>
+        /// <param name="filename">Файл</param>
 		private void PlaySound(string filename)
 		{
-            string text = UserConfigPath + "ringtons\\" + filename;
-            bool flag = !File.Exists(text);
-			if (!flag)
+            string path = UserConfigPath + "ringtons\\" + filename;
+			if (File.Exists(path))
             {
-                player(text);
+                Player(path);
             }
         }
 
-        private static void player(string source)
+        /// <summary>
+        /// Загрузка для проигрования
+        /// </summary>
+        /// <param name="source">Путь к файлу</param>
+        private void Player(string source)
         {
             SoundPlayer soundPlayer = new SoundPlayer { SoundLocation = source };
             soundPlayer.Load();
             soundPlayer.Play();
         }
 
+        /// <summary>
+        /// Загрузка существующих рингтонов
+        /// </summary>
         private void LoadSound()
 		{
 			string text = UserConfigPath + "ringtons\\";
-			bool flag = File.Exists(text + User.Default.SoundPush);
-		    if (flag)
+		    if (File.Exists(text + User.Default.SoundPush))
 		    {
 		        string[] files = Directory.GetFiles(text, "*.wav");
 		        string[] array = files;
 		        foreach (string path in array)
 		        {
 		            string fileName = Path.GetFileName(path);
-		            bool flag2 = fileName != null && cbSound.Items.IndexOf(fileName) < 0;
-		            if (flag2)
+		            if (fileName != null && cbSound.Items.IndexOf(fileName) < 0)
 		                cbSound.Items.Add(fileName);
 		        }
 		    }
@@ -508,6 +569,10 @@ namespace WNSWofA
 		        DownloadSound();
 		}
 
+        /// <summary>
+        /// Скачка рингтона
+        /// </summary>
+        /// <param name="filename">Название рингтона</param>
 		private void DownloadSound(string filename = "tuturuu.wav")
 		{
 			string text = UserConfigPath + "ringtons";
@@ -523,10 +588,13 @@ namespace WNSWofA
 			webClient.DownloadFileCompleted += Complete;
 		}
 
+        /// <summary>
+        /// Показ уведомления
+        /// </summary>
+        /// <param name="text">Сообщение</param>
 		private void ShowStatus(string text)
 		{
-			bool flag = !notifyIcon1.Visible;
-			if (flag)
+			if (!notifyIcon1.Visible)
 			{
 				notifyIcon1.Visible = true;
 			}
@@ -547,8 +615,7 @@ namespace WNSWofA
 
 		private void копироватьСсылкуToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			bool flag = listAnime.Items.Count > 0;
-			if (flag)
+			if (listAnime.Items.Count > 0)
 			{
 				int selectedIndex = listAnime.SelectedIndex;
 				Clipboard.SetText(_pagesAnime[selectedIndex].Page_url);
@@ -560,13 +627,11 @@ namespace WNSWofA
 		{
 			try
 			{
-				bool flag = e.KeyChar == '\r';
-				if (flag)
+				if (e.KeyChar == '\r')
 				{
 					int count = listAnime.Items.Count;
 					AddAnime(toolpageAnime.Text);
-					bool flag2 = listAnime.Items.Count > count;
-					if (flag2)
+					if (listAnime.Items.Count > count)
 					{
 						MessageBox.Show(@"Добавленна", @"Страница");
 						toolpageAnime.Text = "";
@@ -607,6 +672,11 @@ namespace WNSWofA
 			PlaySound(cbSound.Text);
 		}
 
+        /// <summary>
+        /// Получение информации с удаленный папки
+        /// </summary>
+        /// <param name="url">Сссылка</param>
+        /// <returns></returns>
 		private string Get(string url)
 		{
 			WebRequest webRequest = WebRequest.Create(url);
@@ -645,7 +715,7 @@ namespace WNSWofA
         {
             if(listRingtons.SelectedIndex > -1) {
                 string url = "http://aldiamond.16mb.com/WNSWofA/ringtons/" + listRingtons.SelectedItem;
-                player(url);
+                Player(url);
             }
         }
 

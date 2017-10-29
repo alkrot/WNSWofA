@@ -65,18 +65,22 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="VkApi">
-      <HintPath>..\..\apiVk\apiVk\bin\Debug\VkApi.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="INI_RW">
       <HintPath>..\INI_RW\INI_RW\bin\Debug\INI_RW.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\apiVk\apiVk\bin\Debug\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="VK">
+      <HintPath>..\VK.Clear\bin\Debug\VK.dll</HintPath>
+    </Reference>
+    <Reference Include="VkApi, Version=1.0.0.5, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\VkApi.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -108,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Anime.ico" />
+    <None Include="packages.config" />
     <None Include="posterBox2.png" />
     <None Include="WNSWofA_TemporaryKey.pfx" />
   </ItemGroup>
